@@ -1,4 +1,5 @@
 import psycopg2
+import pandas as pd
 from typing import List, Any
 from contextlib import contextmanager
 
@@ -33,25 +34,29 @@ class MyDb:
             SELECT * FROM deals_schema.deals
             ''')
             data = cursor.fetchall()
+        returnable_data = pd.DataFrame(data, columns = data[0].description)
         return data
 
     def get_specific_games(self, platform: str = 'playstation', date: str = None):
         if platform is None:
-            return {}
-
-        with self.get_cursor() as cursor:
-            query = '''
+            return pd.DataFrame()
+        
+        query = '''
             SELECT * FROM deals_schema.deals
             '''
 
-            query += f'WHERE platform = {platform}'
+        query += f'WHERE platform = {platform}'
             
-            if date:
-                query += f'AND date = {date}'
+        if date:
+            query += f'AND date = {date}'
             
+
+        with self.get_cursor() as cursor:
             cursor.execute(query)
             data = cursor.fetchall()
-        return data
+        columns = data[0].description
+        returnable_data = pd.DataFrame(data, columns = columns)
+        return returnable_data
 
     def upsert_data(self, data:List[Any], columns:List[str]):
         if value is None or columns is None:
