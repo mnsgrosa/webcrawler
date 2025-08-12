@@ -70,22 +70,27 @@ class MyCrawler(MyLogger):
                 self.logger.info(f'Found {len(titles)} titles')
                 self.logger.info(f'Type of titles: {type(titles)}')
                 date = datetime.now().date()
-                for title in titles:
+                for i, title in enumerate(titles):
+                    self.logger.info(f'Title {i + 1} of {len(titles)}')
                     self.logger.info(f'Title: {title.get_text(strip = True)}')
-                    game_name = title.find('span', {'data-qa': lambda x: x and 'product-name' in x}).get_text(strip = True)
-                    self.logger.info(f'Game name: {game_name}')
-                    game_type = title.find('span', {'data-qa': lambda x: x and 'product-type' in x}).get_text(strip = True)
-                    self.logger.info(f'Game type: {game_type}')
-                    discount_price = title.find('span', {'data-qa': lambda x: x and 'price' in x}).get_text(strip = True)
-                    self.logger.info(f'Discount price: {discount_price}')
+                    game_name = title.find('span', {'data-qa': lambda x: x and 'product-name' in x})
+                    game_name_text = game_name.get_text(strip = True) if game_name else None 
+                    self.logger.info(f'Game name: {game_name_text}')
+                    game_type = title.find('span', {'data-qa': lambda x: x and 'product-type' in x})
+                    game_type_text = game_type.get_text(strip = True) if game_type else None 
+                    self.logger.info(f'Game type: {game_type_text}')
+                    discount_price = title.find('span', {'data-qa': lambda x: x and 'price' in x})
+                    discount_price_text = discount_price.get_text(strip = True) if discount_price else None 
+                    self.logger.info(f'Discount price: {discount_price_text}')
                     self.games_list.append({
                         'date': date,
                         'platform': self.platform,
-                        'game_name': game_name,
-                        'game_type': game_type,
-                        'price': discount_price
+                        'game_name': game_name_text,
+                        'game_type': game_type_text,
+                        'price': discount_price_text
                     })
-                    return self.games_list
+                self.logger.info('Scrapping finished from deals page')
+                return self.games_list
             except Exception as e:
                 self.logger.error(f'Couldnt get deals:{e}')
 
