@@ -9,7 +9,7 @@ psql -v ON_ERROR_STOP=1 <<-EOSQL
 
     CREATE TABLE deals_schema.deals(
         date DATE DEFAULT CURRENT_DATE,
-        console VARCHAR(4),
+        platform VARCHAR(4),
         game_name VARCHAR(255),
         game_type VARCHAR(255),
         price NUMERIC(2)
