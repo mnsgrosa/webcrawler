@@ -75,19 +75,16 @@ class MySteamCrawler(MyCrawler):
             except Exception as e:
                 self.logger.error(f'Error couldnt load the page soup: {e}')
                 return []
-        self.logger.info(f'Soup: {soup}')
-        content_div = soup.find_all('div')
-        self.logger.info(f'Size of content divs: {len(content_div)}')
-        self.logger.info(f'content divs: {content_div}')
+        app_ids = []
         try:
-            appids_list = []
-            for attr_name in content_div.attrs:
-                if attr_name.startswith('data-browser_contenthub_all_'):
-                    data_string = content_div[attr_name]
-                    self.logger.info(f'Data string found: {data_string}')
-                    data = json.load(data_string)
-                    appids_list = data.get('appids', [])
-                    break
+            for div_tag in soup.find_all('div'):
+                for attribute_name in div_tag.attrs:
+                    if attribute_name.startswith('data-browser_contenthub_all_'):
+                        data_string = div_tag[attribute_name]
+                        self.logger.info(f'Data string found: {data_string}')
+                        data = json.loads(data_string)
+                        appids_list = data.get('appids', [])
+                        break
             
             if appids_list:
                 self.logger.info(f'List of appids: {appids_list} and size: {len(appids_list)}')
