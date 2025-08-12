@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Any
 
 class StatusMessage(BaseModel):
     status:bool = Field(default = True, description = 'Request done or not')
@@ -14,3 +14,7 @@ class GameData(BaseModel):
 
 class GameList(BaseModel):
     items: List[GameData]
+
+class PlatformRequest(BaseModel):
+    platform:str = Field(..., description = 'Which website was scraped')
+    date:Optional[Any] = None

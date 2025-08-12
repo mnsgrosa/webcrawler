@@ -1,4 +1,5 @@
 import psycopg2
+from typing import List, Any
 from contextlib import contextmanager
 
 class MyDb:
@@ -51,3 +52,24 @@ class MyDb:
             cursor.execute(query)
             data = cursor.fetchall()
         return data
+
+    def upsert_data(self, data:List[Any], columns:List[str]):
+        if value is None or columns is None:
+            return False
+
+        try:
+            query = f'''
+            INSERT INTO deals_schema.deals
+                date,
+                platform,
+                game_name,
+                game_type,
+                price
+            VALUES (%s, %s, %s, %s, %s)
+            '''
+            
+            with self.get_cursor() as cursor:
+                cursor.executemany(query, data)
+            return True
+        except Exception as e:
+            return False
