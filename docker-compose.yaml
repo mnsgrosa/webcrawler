@@ -1,0 +1,16 @@
+servies:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER: psql
+      - POSTGRES_PASSWORD: my_password
+      - POSTGRES_DB: deals_db
+    volumes:
+      - ./init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
+
+  backend:
+    depends_on:
+      - db
+    restart: always
+    
