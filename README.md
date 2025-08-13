@@ -2,7 +2,20 @@
 
 ## Escopo inicial
 
-Obter dados de titulos em oferta nas lojas da playstation store, microsoft store e steam com o webdriver com: selenium, beautifulsoup, airflow, pydantic, fastapi, postgres e pandas
+Obter dados de titulos em oferta nas lojas da playstation store, microsoft store e steam com o webdriver com: 
+
+- selenium
+- beautifulsoup 
+- airflow 
+- pydantic 
+- fastapi 
+- postgres 
+- pandas
+
+## Ideia subsequente(Dia 2):
+
+Ver os scores de jogos em alguma base de reviews que foram armazenados no banco de dados e
+com o selenium e beautifulsoup4 pegar as reviews
 
 ## Dia 1(12/08/2025) o que consegui fazer e o que estou encarando ate o momento
 
@@ -21,3 +34,8 @@ Erros de digitacao e ordenacao de variaveis
 
 ### Proximos passos as 13:46
 progarmar as dags do airflow para utilizarem as ferramentas de crawling
+
+## Dia 2 (13/08/2025)
+
+Terminar o steam_tools para acessar as paginas dos jogos, e agora criar o airflow para orquestrar o agendamento, alem disso
+criar a imagem customizada do airflow com as libs e psql rodando o script de inicializacao se sobrar tempo criar um streamlit
