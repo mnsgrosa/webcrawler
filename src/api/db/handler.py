@@ -9,9 +9,9 @@ class MyDb(MyLogger):
         super().__init__(__name__)
         self.connection = psycopg2.connect(
             dbname = 'deals_db',
-            user = 'psql',
+            user = 'postgres',
             password = 'my_password',
-            host = 'localhost',
+            host = 'db',
             port = 5432
         )
 

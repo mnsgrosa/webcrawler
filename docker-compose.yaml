@@ -1,16 +1,129 @@
-servies:
+services:
   db:
-    image: postgres:15-alpine
-    restart: always
+    image: postgres:15
     environment:
-      - POSTGRES_USER: psql
-      - POSTGRES_PASSWORD: my_password
-      - POSTGRES_DB: deals_db
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
+      - postgres_data:/var/lib/postgresql/data/
       - ./init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
 
-  backend:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn src.api.rest:app --host 0.0.0.0 --port 9000
+    volumes:
+      - .:/app 
+    ports:
+      - "9000:9000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       - db
-    restart: always
-    
+    networks:
+      - app_network
+
+  crawler-base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my-crawler-image:latest
+    command: ["echo", "Crawler image built successfully"]
+    group_add:
+      - "953" 
+
+  airflow-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${AIRFLOW_DB_USER}
+      - POSTGRES_PASSWORD=${AIRFLOW_DB_PASSWORD}
+      - POSTGRES_DB=${AIRFLOW_DB_NAME}
+    volumes:
+      - airflow_db_data:/var/lib/postgresql/data/
+    networks:
+      - app_network
+
+  airflow-init:
+    image: apache/airflow:2.8.2
+    depends_on:
+      - airflow-db
+    volumes:
+      - ./my_dags.py:/opt/airflow/dags/my_dags.py
+      - ./src:/opt/airflow/dags/src
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-db:5432/${AIRFLOW_DB_NAME}
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    command:
+      - bash
+      - -c
+      - |
+        airflow db init && \
+        airflow users create \
+          --username admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com \
+          --password admin
+    networks:
+      - app_network
+    group_add:
+      - "953"
+
+  airflow-webserver:
+    image: apache/airflow:2.8.2
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./my_dags.py:/opt/airflow/dags/my_dags.py
+      - ./src:/opt/airflow/dags/src
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-db:5432/${AIRFLOW_DB_NAME}
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__WEBSERVER__SECRET_KEY=admin
+    command: webserver
+    user: "${AIRFLOW_UID}:0"
+    networks:
+      - app_network
+    group_add:
+      - "953"
+
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.2
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    volumes:
+      - ./my_dags.py:/opt/airflow/dags/my_dags.py
+      - ./src:/opt/airflow/dags/src
+      - ./logs:/opt/airflow/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-db:5432/${AIRFLOW_DB_NAME}
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__WEBSERVER__SECRET_KEY=admin
+    command: scheduler
+    user: "${AIRFLOW_UID}:0"
+    group_add:
+      - "953"
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  airflow_db_data:
+
+networks:
+  app_network:
+    driver: bridge

@@ -1,11 +1,10 @@
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
-from webdriver_manager.firefox import GeckoDriverManager
 from bs4 import BeautifulSoup
 from src.utils.logger import MyLogger
 from src.orchestrate.crawler.abstract_tool import MyCrawler
@@ -21,22 +20,25 @@ class MyXboxCrawler(MyCrawler):
         super().__init__(__name__)
         self.platform = 'xbox'
         self.url = 'https://www.microsoft.com/pt-br/store/deals/games/xbox'
-        self.firefox_options = Options()
-        self.firefox_options.add_argument("--headless")
         self.games_list = []
     
     @contextmanager
     def get_webdriver(self):
         driver = None
         try:
-            if driver is None: 
-                self.logger.info('Creating xbox driver')
-                driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options = self.firefox_options)
-                self.logger.info(f'Driver created and navigating {self.url}')
-                driver.get(self.url)
-                yield driver
-        except Exception as e:
-            self.logger.error(f'An error ocurred: {e} @ {self.url}')
+            self.logger.info('Creating xbox driver')
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage") 
+            driver = webdriver.Chrome(
+                options=chrome_options
+            )
+
+            self.logger.info(f'Driver created and navigating to {self.url}')
+            driver.get(self.url)
+            yield driver
+
         finally:
             if driver:
                 driver.quit()
@@ -89,7 +91,7 @@ class MyXboxCrawler(MyCrawler):
         try:
             self.logger.info('Starting to post the deals')
             with httpx.Client() as client:
-                response = client.post('http://localhost:8000/post/games', json = {'items':self.games_list})
+                response = client.post('http://api:9000/post/games', json = {'items':self.games_list})
                 response.raise_for_status()
             self.logger.info(f"Deals posted: {response.json().get('status')}")
             return response.json()
