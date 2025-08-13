@@ -9,7 +9,8 @@ from bs4 import BeautifulSoup
 from src.utils.logger import MyLogger
 from datetime import datetime
 from contextlib import contextmanager
-from src.crawler.abstract_tool import MyCrawler
+from src.orchestrate.crawler.abstract_tool import MyCrawler
+import re
 import httpx
 import json
 import time
@@ -77,19 +78,22 @@ class MyPlaystationCrawler(MyCrawler):
                     game_name_text = game_name.get_text(strip = True) if game_name else None 
                     self.logger.info(f'Game name: {game_name_text}')
                     game_type = title.find('span', {'data-qa': lambda x: x and 'product-type' in x})
-                    game_type_text = game_type.get_text(strip = True) if game_type else None 
+                    game_type_text = game_type.get_text(strip = True) if game_type else 'standard'
                     self.logger.info(f'Game type: {game_type_text}')
                     discount_price = title.find('span', {'data-qa': lambda x: x and 'price' in x})
-                    discount_price_text = discount_price.get_text(strip = True) if discount_price else None 
+                    discount_price_text = discount_price.get_text(strip = True) if discount_price else 0
+                    if discount_price_text != 0:
+                        discount_price_text = re.findall(r'\d+\,\d+', discount_price_text)
+                        discount_price_text = discount_price_text[0].replace(',', '.')
                     self.logger.info(f'Discount price: {discount_price_text}')
                     self.games_list.append({
-                        'date': date,
+                        'date': date.isoformat(),
                         'platform': self.platform,
                         'game_name': game_name_text,
                         'game_type': game_type_text,
                         'price': discount_price_text
                     })
-                self.logger.info('Scrapping finished from deals page')
+                self.logger.info(f'Scrapping finished from deals page: {self.games_list}')
                 return self.games_list
             except Exception as e:
                 self.logger.error(f'Couldnt get deals: {e}')
@@ -97,19 +101,20 @@ class MyPlaystationCrawler(MyCrawler):
 
     def post_contents(self):
         self.logger.info('Starting post method')
-        if self.game_list is None:
-            self.logger.info('Get deals first')
+        if self.games_list is None:
+            self.logger.info('Get the deals first')
             return {}
         try:
             self.logger.info('Starting to post the deals')
             with httpx.Client() as client:
-                response = client.post('http://localhost:8000/post/games', json = self.games_list)
+                response = client.post('http://localhost:8000/post/games', json = {'items':self.games_list})
                 response.raise_for_status()
             self.logger.info(f"Deals posted: {response.json().get('status')}")
             return response.json()
         except Exception as e:
             self.logger.error(f'Failed to post deals: {e}')
             return {}
+
 
     def full_process(self):
         self.logger.info('Starting the playstation process')

@@ -8,7 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.firefox import GeckoDriverManager
 from bs4 import BeautifulSoup
 from src.utils.logger import MyLogger
-from src.crawler.abstract_tool import MyCrawler
+from src.orchestrate.crawler.abstract_tool import MyCrawler
 from datetime import datetime
 from contextlib import contextmanager
 import re
@@ -43,10 +43,6 @@ class MyXboxCrawler(MyCrawler):
                 self.logger.info('Driver closed')
 
     def get_deals(self):
-        if self.url != self.base_url:
-            self.logger.error('Not located at the base page')
-            return []
-
         with self.get_webdriver() as driver:
             try:
                 self.logger.info('Starting to get xbox deals')
@@ -72,7 +68,7 @@ class MyXboxCrawler(MyCrawler):
                         self.logger.info(f'Getting the discount price: {discount_price}')
                         date = datetime.now().date()
                         self.games_list.append({
-                            'date': date,
+                            'date': date.isoformat(),
                             'platform': self.platform,
                             'game_name': game_name,
                             'game_type': 'standard',
@@ -93,7 +89,7 @@ class MyXboxCrawler(MyCrawler):
         try:
             self.logger.info('Starting to post the deals')
             with httpx.Client() as client:
-                response = client.post('http://localhost:8000/post/games', json = self.games_list)
+                response = client.post('http://localhost:8000/post/games', json = {'items':self.games_list})
                 response.raise_for_status()
             self.logger.info(f"Deals posted: {response.json().get('status')}")
             return response.json()

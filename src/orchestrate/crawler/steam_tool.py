@@ -8,7 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.firefox import GeckoDriverManager
 from bs4 import BeautifulSoup
 from src.utils.logger import MyLogger
-from src.crawler.abstract_tool import MyCrawler
+from src.orchestrate.crawler.abstract_tool import MyCrawler
 from datetime import datetime
 from contextlib import contextmanager
 import re
@@ -138,7 +138,7 @@ class MySteamCrawler(MyCrawler):
                     self.logger.info(f'Price: {discount_price}')
 
                     self.games_list.append({
-                        'date': date,
+                        'date': date.isoformat(),
                         'platform': self.platform,
                         'game_name': game_name,
                         'game_type': 'standard',
@@ -151,6 +151,22 @@ class MySteamCrawler(MyCrawler):
         except Exception as e:
             self.logger.error(f'Failed to scrape games due to: {e}')
             return []
+    
+    def post_contents(self):
+        self.logger.info('Starting post method')
+        if self.games_list is None:
+            self.logger.info('Get the deals first')
+            return {}
+        try:
+            self.logger.info('Starting to post the deals')
+            with httpx.Client() as client:
+                response = client.post('http://localhost:8000/post/games', json = {'items':self.games_list})
+                response.raise_for_status()
+            self.logger.info(f"Deals posted: {response.json().get('status')}")
+            return response.json()
+        except Exception as e:
+            self.logger.error(f'Failed to post deals: {e}')
+            return {}
 
     def full_process(self):
         self.logger.info('Starting the steam process')
@@ -160,7 +176,7 @@ class MySteamCrawler(MyCrawler):
             return []
         
         self.get_deals_page()
-        self.load_more_deals()
         appids_list = self.get_deals_appids()
         self.access_appids(appids_list)
+        self.post_contents()
         self.logger.info('Steam scraping done')

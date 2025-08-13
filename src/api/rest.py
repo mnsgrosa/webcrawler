@@ -17,10 +17,11 @@ def get_games():
     data = db.get_all_data()
     return {'data': data}
 
-@app.get('/get/platform', response_model = GameList)
+@app.get('/get/platform')
 def get_games_platform(request: PlatformRequest):
-    data = db.get_specific_games(request.platform, request.date)
-    return {'items': data}
+    df = db.get_specific_games(request.platform, request.date)
+    list_of_games = df.to_dict(orient='records')
+    return {'items': list_of_games}
 
 if __name__ == '__main__':
     uvicorn.run(app, host = '0.0.0.0', port = 8000)
