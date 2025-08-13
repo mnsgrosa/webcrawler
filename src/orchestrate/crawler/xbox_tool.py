@@ -43,6 +43,10 @@ class MyXboxCrawler(MyCrawler):
                 self.logger.info('Driver closed')
 
     def get_deals(self):
+        if self.url != self.base_url:
+            self.logger.error('Not located at the base page')
+            return []
+
         with self.get_webdriver() as driver:
             try:
                 self.logger.info('Starting to get xbox deals')
@@ -74,6 +78,7 @@ class MyXboxCrawler(MyCrawler):
                             'game_type': 'standard',
                             'price': discount_price
                         })
+                        
                 self.logger.info('Scrapping finished from deals page')
                 return self.games_list
             except Exception as e:
@@ -95,3 +100,9 @@ class MyXboxCrawler(MyCrawler):
         except Exception as e:
             self.logger.error(f'Failed to post deals: {e}')
             return {}
+
+    def full_process(self):
+        self.logger.info('Starting the xbox process')
+        self.get_deals()
+        self.post_contents()
+        self.logger.info('Xbox scraping done')

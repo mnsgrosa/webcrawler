@@ -18,7 +18,8 @@ class MyPlaystationCrawler(MyCrawler):
     def __init__(self):
         super().__init__(__name__)
         self.platform = 'playstation'
-        self.url = 'https://store.playstation.com/pt-br/pages/deals/'
+        self.base_url = 'https://store.playstation.com/pt-br/pages/deals/'
+        self.url = self.base_url
         self.firefox_options = Options()
         self.firefox_options.add_argument("--headless")
         self.games_list = []
@@ -40,8 +41,7 @@ class MyPlaystationCrawler(MyCrawler):
                 driver.quit()
                 self.logger.info('Driver closed')
 
-
-    def get_all_deals_page(self):
+    def get_deals_page(self):
         with self.get_webdriver() as driver:
             try:
                 self.logger.info('Waiting playstation page to load')
@@ -57,9 +57,9 @@ class MyPlaystationCrawler(MyCrawler):
                 return None
 
     def get_contents(self):
-        if 'deals' in self.url:
-            self.logger.info('Deals page not initialized')
-            return 'Run get_all_deals_page() first'
+        if self.url == self.base_url:
+            self.logger.info('Still at the first page: run get_contents()')
+            return []
         with self.get_webdriver() as driver:
             try:
                 self.logger.info('Starting scrapping from deals page')
@@ -95,18 +95,30 @@ class MyPlaystationCrawler(MyCrawler):
                 self.logger.error(f'Couldnt get deals: {e}')
                 return []
 
-        def post_contents(self):
-            self.logger.info('Starting post method')
-            if self.game_list is None:
-                self.logger.info('Get deals first')
-                return {}
-            try:
-                self.logger.info('Starting to post the deals')
-                with httpx.Client() as client:
-                    response = client.post('http://localhost:8000/post/games', json = self.games_list)
-                    response.raise_for_status()
-                self.logger.info(f"Deals posted: {response.json().get('status')}")
-                return response.json()
-            except Exception as e:
-                self.logger.error(f'Failed to post deals: {e}')
-                return {}
+    def post_contents(self):
+        self.logger.info('Starting post method')
+        if self.game_list is None:
+            self.logger.info('Get deals first')
+            return {}
+        try:
+            self.logger.info('Starting to post the deals')
+            with httpx.Client() as client:
+                response = client.post('http://localhost:8000/post/games', json = self.games_list)
+                response.raise_for_status()
+            self.logger.info(f"Deals posted: {response.json().get('status')}")
+            return response.json()
+        except Exception as e:
+            self.logger.error(f'Failed to post deals: {e}')
+            return {}
+
+    def full_process(self):
+        self.logger.info('Starting the playstation process')
+        if self.url != self.base_url:
+            self.logger.error('Not located at the base page')
+            self.url = self.base_url
+            return []
+        
+        self.get_deals_page()
+        self.get_contents()
+        self.post_contents()
+        self.logger.info('Playstation scraping done')

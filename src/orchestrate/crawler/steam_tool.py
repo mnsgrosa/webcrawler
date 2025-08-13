@@ -69,24 +69,6 @@ class MySteamCrawler(MyCrawler):
                 self.logger.error(f'Couldnt get to deals page: {e}')
                 return None
 
-    def load_more_deals(self):
-        if self.current_url == self.base_url:
-            self.logger.error('Still at the homepage: run get_deals_url(): navigate_deals')
-        
-        self.logger.info('Starting the loop to get 108 games')
-        try:
-            with self.get_webdriver() as driver:
-                for i in range(10):
-                    self.logger.info(f'Loop {i + 1} of {10}')
-                    self.logger.info('Clicking to show more')
-                    show_more_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Show more')]")))
-                    show_more_button.click()
-                self.current_url = driver.current_url
-            return True
-        except Exception as e:
-            self.logger.error('Couldnt load more deals')
-            return False
-
     def get_deals_appids(self):
         if self.current_url == self.base_url:
             self.logger.info('Still at homepage run: get_deals_url(): get_deals_appids')
@@ -171,6 +153,7 @@ class MySteamCrawler(MyCrawler):
             return []
 
     def full_process(self):
+        self.logger.info('Starting the steam process')
         if self.current_url != self.base_url:
             self.logger.error(f'Returning to the base url located @ {self.current_url}')
             self.current_url = self.base_url
