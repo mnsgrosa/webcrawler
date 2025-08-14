@@ -15,6 +15,9 @@ import json
 import time
 
 class MyPlaystationCrawler(MyCrawler):
+    '''
+    Classe responsavel pelo scraping de ofertas da playstation store
+    '''
     def __init__(self):
         super().__init__(__name__)
         self.platform = 'playstation'

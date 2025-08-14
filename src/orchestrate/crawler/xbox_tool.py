@@ -17,6 +17,9 @@ import time
 
 class MyXboxCrawler(MyCrawler):
     def __init__(self):
+        '''
+        Classe responsavel por fazer scraping da pagina microsoft store
+        '''
         super().__init__(__name__)
         self.platform = 'xbox'
         self.url = 'https://www.microsoft.com/pt-br/store/deals/games/xbox'

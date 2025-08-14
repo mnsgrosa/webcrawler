@@ -14,7 +14,3 @@ class GameData(BaseModel):
 
 class GameList(BaseModel):
     items: List[GameData]
-
-class PlatformRequest(BaseModel):
-    platform:str = Field(..., description = 'Which website was scraped')
-    date:Optional[Any] = None

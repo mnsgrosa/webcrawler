@@ -1,7 +1,11 @@
 import logging
 import sys
 
+
 class MyLogger:
+    '''
+    Classe base logger para tracking de debug do codigo
+    '''
     def __init__(self, logger_name = __name__):
         self.logger = logging.getLogger(logger_name)
         self.logger.setLevel(logging.INFO)

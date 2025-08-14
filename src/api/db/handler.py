@@ -5,6 +5,9 @@ from contextlib import contextmanager
 from src.utils.logger import MyLogger
 
 class MyDb(MyLogger):
+    '''
+    Classe que manipula o banco de dados
+    '''
     def __init__(self):
         super().__init__(__name__)
         self.connection = psycopg2.connect(
@@ -17,6 +20,10 @@ class MyDb(MyLogger):
 
     @contextmanager
     def get_cursor(self):
+        '''
+        Context manager que permite menos repeticao de codigo para fechar
+        e abrir conexoes ao banco de dados
+        '''
         cursor = None
         try:
             self.logger.info('Creating cursor')
@@ -35,6 +42,9 @@ class MyDb(MyLogger):
                 cursor.close()
     
     def get_all_data(self):
+        '''
+        Metodo responsavel por pegar todas as orfertas do banco de dados
+        '''
         try:
             self.logger.info('Getting all data from database')
             with self.get_cursor() as cursor:
@@ -51,6 +61,9 @@ class MyDb(MyLogger):
             return pd.DataFrame()
 
     def get_specific_games(self, platform: str = 'playstation', date: str = None):
+        '''
+        Metodo mais especifico com where para por plataforma e data
+        '''
         if platform is None:
             self.logger.info('No platform provided')
             return pd.DataFrame()
@@ -84,6 +97,9 @@ class MyDb(MyLogger):
             return pd.DataFrame()
     
     def upsert_data(self, data:List[Dict[str, Any]]):
+        '''
+        Metodo de insercao de dados
+        '''
         if data is None:
             self.logger.info(f'Invalid format: {data}')
             return False
