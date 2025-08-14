@@ -54,14 +54,13 @@ class MySteamCrawler(MyCrawler):
             try:
                 self.logger.info('Starting to get steam deal page')
                 wait = WebDriverWait(driver, 5)
-                specials_button = wait.until(EC.presence_of_element_located((By.LINK_TEXT, 'Specials')))
-                self.logger.info('Element loaded')
+                specials_button = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@href, '/specials')]")))
                 specials_button.click()
                 self.current_url = driver.current_url
                 self.logger.info('Redirected to deals page')
                 return self.current_url
             except Exception as e:
-                self.logger.error(f'Couldnt get to deals page: {e}')
+                self.logger.error(f'Couldnt get to deals page: {e}', exc_info = True)
                 return None
 
     def get_deals_appids(self):

@@ -27,3 +27,4 @@ RUN uv pip install --system --no-cache .
 COPY ./src ./src
 COPY ./scripts ./scripts
 COPY ./my_dags.py ./my_dags
+COPY ./page.py .

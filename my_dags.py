@@ -30,10 +30,10 @@ def scraper_dag():
         **DOCKER_OPERATOR_ARGS
     )
 
-    DockerOperator(
-        task_id = 'run_steam_crawler',
-        command = 'python -m scripts.run_steam_crawler',
-        **DOCKER_OPERATOR_ARGS
-    )
+    # DockerOperator(
+    #     task_id = 'run_steam_crawler',
+    #     command = 'python -m scripts.run_steam_crawler',
+    #     **DOCKER_OPERATOR_ARGS
+    # )
 
 scraper_dag()

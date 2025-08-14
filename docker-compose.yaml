@@ -1,4 +1,17 @@
 services:
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my-crawler-image:latest
+    ports:
+      - "8501:8501"
+    command: ["streamlit", "run", "page.py"]
+    depends_on:
+      - api
+    networks:
+      - app_network
+  
   db:
     image: postgres:15
     environment:
@@ -12,6 +25,11 @@ services:
       - "5432:5432"
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   api:
     build:
@@ -25,7 +43,8 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app_network
 

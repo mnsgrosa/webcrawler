@@ -31,6 +31,7 @@ class MyPlaystationCrawler(MyCrawler):
             chrome_options.add_argument("--headless")
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--disable-dev-shm-usage") 
+            chrome_options.add_argument('--max-connections-per-host=2')
             driver = webdriver.Chrome(
                 options=chrome_options
             )
@@ -48,15 +49,16 @@ class MyPlaystationCrawler(MyCrawler):
         with self.get_webdriver() as driver:
             try:
                 self.logger.info('Waiting playstation page to load')
-                view_all_button = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, "a[data-qa='ems-sdk-strand#viewMore#tabletAndAbove']"))
+                view_all_selector = "//a[.//span[starts-with(@id, 'view-all-')]]"
+                view_all_button = WebDriverWait(driver, 30).until(
+                    EC.element_to_be_clickable((By.XPATH, view_all_selector))
                 )
                 view_all_button.click()
                 self.logger.info(f'View all button clicked, redirecting to {driver.current_url}')
                 self.url = driver.current_url
                 return self.url
             except Exception as e:
-                self.logger.error(f'Couldnt get to deals page: {e}')
+                self.logger.error(f'Couldnt get to deals page: {e}', exc_info = True)
                 return None
 
     def get_contents(self):

@@ -18,7 +18,7 @@ def get_games():
     return {'data': data}
 
 @app.get('/get/platform')
-def get_games_platform(request: PlatformRequest):
-    df = db.get_specific_games(request.platform, request.date)
+def get_games_platform(platform: str, date: str = None):
+    df = db.get_specific_games(platform, date)
     list_of_games = df.to_dict(orient='records')
     return {'items': list_of_games}
