@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
-from src.api.schemas import GameList, StatusMessage, PlatformRequest
+from src.api.schemas import GameList, StatusMessage
 from src.api.db.handler import MyDb
 
 db = MyDb()
