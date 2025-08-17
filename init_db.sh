@@ -15,7 +15,8 @@ psql -v ON_ERROR_STOP=1 <<-EOSQL
         platform VARCHAR(20),
         game_name VARCHAR(255),
         game_type VARCHAR(255),
-        price NUMERIC(10, 2) -- Increased precision for price
+        price NUMERIC(10, 2),
+        CONSTRAINT unique_deal UNIQUE (date, game_name)
     );
 
     GRANT ALL PRIVILEGES ON SCHEMA deals_schema TO postgres;

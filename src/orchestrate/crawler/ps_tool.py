@@ -31,6 +31,9 @@ class MyPlaystationCrawler(MyCrawler):
         try:
             self.logger.info('Creating playstation driver')
             chrome_options = Options()
+            
+            user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+            chrome_options.add_argument(f'user-agent={user_agent}')
             chrome_options.add_argument("--headless")
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--disable-dev-shm-usage") 
@@ -52,9 +55,9 @@ class MyPlaystationCrawler(MyCrawler):
         with self.get_webdriver() as driver:
             try:
                 self.logger.info('Waiting playstation page to load')
-                view_all_selector = "//a[.//span[starts-with(@id, 'view-all-')]]"
+                view_all_selector = "a:has(span[id^='view-all-'])"
                 view_all_button = WebDriverWait(driver, 30).until(
-                    EC.element_to_be_clickable((By.XPATH, view_all_selector))
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, view_all_selector))
                 )
                 view_all_button.click()
                 self.logger.info(f'View all button clicked, redirecting to {driver.current_url}')

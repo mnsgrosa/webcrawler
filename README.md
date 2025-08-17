@@ -12,9 +12,9 @@ Caso ocorra algum erro basta desligar servico de postgres que estiver rodando em
 
 Apos rodar os links para cada componente sao:
 
-[Airflow ui](localhost:8080/)
-[Backends disponiveis](localhost:9000/)
-[Streamlit para visualizar os dados](localhost:8501/)
+[Airflow ui](localhost:8080/) <br>
+[Backends disponiveis](localhost:9000/) <br>
+[Streamlit para visualizar os dados](localhost:8501/) <br>
 
 ## Escopo inicial
 

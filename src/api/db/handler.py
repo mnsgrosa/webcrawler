@@ -10,7 +10,10 @@ class MyDb(MyLogger):
     '''
     def __init__(self):
         super().__init__(__name__)
-        self.connection = psycopg2.connect(
+        self.connection = self.create_connection()
+
+    def create_connection(self):
+        return psycopg2.connect(
             dbname = 'deals_db',
             user = 'postgres',
             password = 'my_password',
@@ -24,6 +27,8 @@ class MyDb(MyLogger):
         Context manager que permite menos repeticao de codigo para fechar
         e abrir conexoes ao banco de dados
         '''
+        if self.connection.closed:
+            self.connection = self.create_connection() 
         cursor = None
         try:
             self.logger.info('Creating cursor')
@@ -114,6 +119,10 @@ class MyDb(MyLogger):
                 price
             )
             VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (date, game_name) DO UPDATE SET
+                price = EXCLUDED.price,
+                date = EXCLUDED.date,
+                game_type = EXCLUDED.game_type;
             '''
             
             values_to_insert = [
